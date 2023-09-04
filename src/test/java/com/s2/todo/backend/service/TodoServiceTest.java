@@ -1,4 +1,4 @@
-package com.s2.todo.backend;
+package com.s2.todo.backend.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
