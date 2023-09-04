@@ -1,0 +1,106 @@
+package com.s2.todo.backend;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
+import com.s2.todo.backend.model.Todo;
+import com.s2.todo.backend.repository.TodoRepository;
+import com.s2.todo.backend.service.TodoService;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+
+@ExtendWith(SpringExtension.class)
+@DataJpaTest
+@AutoConfigureMockMvc
+@ComponentScan(basePackages = "com.s2.todo.backend")
+public class TodoServiceTest {
+
+    @Autowired
+    private TodoService todoService;
+
+    @MockBean
+    TodoRepository todoRepositoryMock;
+
+    @Test
+    public void testGetAllTodos() {
+        // Mock the repository to return a list of TODOs
+        when(todoRepositoryMock.findAll()).thenReturn(Arrays.asList(
+            Todo.builder().description("Task 1").status(Todo.Status.NOT_DONE).build(),
+            Todo.builder().description("Task 2").status(Todo.Status.DONE).build()
+        ));
+
+        List<Todo> todos = todoService.getAllTodos();
+
+        // Assertions
+        assertThat(todos.size()).isEqualTo(2);
+        assertThat(todos.get(0).getDescription()).isEqualTo("Task 1");
+        assertThat(todos.get(1).getStatus()).isEqualTo(Todo.Status.DONE);
+    }
+
+    @Test
+    public void testAddItem() {
+        // Arrange
+        Todo todoToAdd = new Todo();
+        Todo savedTodo = new Todo();
+        when(todoRepositoryMock.save(todoToAdd)).thenReturn(savedTodo);
+
+        // Act
+        Todo result = todoService.save(todoToAdd);
+
+        // Assert
+        assertThat(result).isEqualTo(savedTodo);
+    }
+
+    @Test
+    public void testGetNotDoneTodos() {
+        // Arrange
+        List<Todo> notDoneTodos = new ArrayList<>();
+        when(todoRepositoryMock.findByStatus(Todo.Status.NOT_DONE)).thenReturn(notDoneTodos);
+
+        // Act
+        List<Todo> result = todoService.getNotDoneTodos();
+
+        // Assert
+        assertThat(result).isEqualTo(notDoneTodos);
+    }
+
+    @Test
+    public void testGetTodoDetails() {
+        // Arrange
+        Long todoId = 1L;
+        Todo todo = new Todo();
+        when(todoRepositoryMock.findById(todoId)).thenReturn(Optional.of(todo));
+
+        // Act
+        Todo result = todoService.getTodoDetails(todoId);
+
+        // Assert
+        assertThat(result).isEqualTo(todo);
+    }
+
+    @Test
+    public void testGetTodoDetailsNotFound() {
+        // Arrange
+        Long todoId = 1L;
+        when(todoRepositoryMock.findById(todoId)).thenReturn(Optional.empty());
+
+        // Act
+        Todo result = todoService.getTodoDetails(todoId);
+
+        // Assert
+        assertThat(result).isNull();
+    }
+
+
+}
