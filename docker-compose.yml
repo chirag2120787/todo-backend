@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  s2-todo-backend-app:
+    build: .
+    container_name: s2-todo-backend-server
+    ports:
+      - "8080:8080"
+    environment:
+      - H2_CONSOLE_ENABLED=true
+      - H2_CONSOLE_SETTINGS_WEB_ALLOW_OTHERS=true
+    depends_on:
+      - h2-database
+    networks:
+      - my-network
+
+  h2-database:
+    image: "oscarfonts/h2:latest"
+    ports:
+      - "1521:1521"  # H2 database TCP port
+      - "8082:8082"  # H2 web console
+    environment:
+      - H2_CONSOLE_ENABLED=true
+      - H2_CONSOLE_SETTINGS_WEB_ALLOW_OTHERS=true
+      - H2_CONSOLE_PATH=/h2-console
+      - H2_DATABASE_URL=jdbc:h2:tcp://h2-database:1521/mem:testdb
+      - H2_DATABASE_DRIVER=org.h2.Driver
+      - H2_DATABASE_USERNAME=sa
+      - H2_DATABASE_PASSWORD=password
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    driver: bridge
