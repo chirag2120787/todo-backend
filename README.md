@@ -42,3 +42,10 @@ Docker Compose will start the H2 database instance and the Spring Boot applicati
 
 
 With these steps, we'll have the Spring Boot service and H2 database running in Docker containers. Users can easily start and interact with the service without worrying about configuring the environment manually.
+
+
+## Feature to make this code production ready
+- Add more detailed tests
+- Add checkstyle/linting 
+- Add CI/CD pipeline config
+- Create separate configs for DEV,STG and PRD
