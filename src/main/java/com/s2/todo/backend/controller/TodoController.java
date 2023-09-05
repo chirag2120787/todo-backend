@@ -140,12 +140,9 @@ public class TodoController {
         }
 
         // Mark the Todo item as 'not done'
-        todo.setStatus(Todo.Status.NOT_DONE);
-        todoService.save(todo);
-
         logger.info("Marked Todo item with ID {} as 'not done'", id);
+        return ResponseEntity.ok(todoService.updateStatus(id, Todo.Status.NOT_DONE));
 
-        return ResponseEntity.ok(todo);
     }
 
     /**

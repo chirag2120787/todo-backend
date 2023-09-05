@@ -3,6 +3,7 @@ package com.s2.todo.backend.service;
 import com.s2.todo.backend.model.Todo;
 import com.s2.todo.backend.repository.TodoRepository;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -53,15 +54,22 @@ public class TodoService {
     /**
      * Update status of a Todo item.
      *
-     * @param id The ID of the Todo item to be marked as "not done".
+     * @param id     The ID of the Todo item to be marked as "not done".
      * @param status The Status of the Todo item to update to.
      * @return The Todo marked as new status if found, or null if the Todo item does not exist.
      */
-    private Todo updateStatus(Long id, Todo.Status status) {
+    public Todo updateStatus(Long id, Todo.Status status) {
         Optional<Todo> optionalTodo = todoRepository.findById(id);
         if (optionalTodo.isPresent()) {
             Todo todo = optionalTodo.get();
             todo.setStatus(status);
+            if (status == Todo.Status.DONE) {
+                todo.setMarkedAsDoneDateTime(new Date());
+                todo.setDone(true);
+            } else {
+                todo.setMarkedAsDoneDateTime(null);
+                todo.setDone(false);
+            }
             logger.info("Updating status for Todo item with ID {}: {}", id, status);
             Todo updatedTodo = todoRepository.save(todo);
             logger.info("Updated status for Todo item with ID {}: {}", id, updatedTodo.getStatus());
@@ -96,7 +104,7 @@ public class TodoService {
     public Page<Todo> getNotDoneTodos(int page, int pageSize) {
         logger.info("Retrieving 'not done' Todo items (page={}, pageSize={})", page, pageSize);
         Pageable pageable = PageRequest.of(page - 1, pageSize); // Page numbers are 1-based, so we subtract 1
-        Page<Todo> todosPage = todoRepository.findByDone(false, pageable);
+        Page<Todo> todosPage = todoRepository.findByIsDone(false, pageable);
         logger.info("Retrieved {} 'not done' Todo items.", todosPage.getNumberOfElements());
         return todosPage;
     }
@@ -124,9 +132,9 @@ public class TodoService {
     @Scheduled(cron = "0 0 0 * * ?") // Daily at midnight
     public void updateStatusForPastDueItems() {
         logger.info("Running scheduled task to update status for past due items.");
-        LocalDateTime currentDateTime = LocalDateTime.now();
+        Date currentDate = new Date();
         List<Todo> pastDueItems =
-            todoRepository.findByStatusAndDueDateTimeLessThan(Todo.Status.NOT_DONE, currentDateTime);
+            todoRepository.findByStatusAndDueDateTimeLessThan(Todo.Status.NOT_DONE, currentDate);
         for (Todo todo : pastDueItems) {
             if (todo.getStatus() != Todo.Status.PAST_DUE) {
                 todo.setStatus(Todo.Status.PAST_DUE);
