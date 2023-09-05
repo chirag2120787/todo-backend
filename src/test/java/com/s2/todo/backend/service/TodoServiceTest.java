@@ -83,7 +83,7 @@ public class TodoServiceTest {
         Page<Todo> notDoneTodoPage = new PageImpl<>(notDoneTodoList);
 
         // Mock the repository to return the Page object
-        when(todoRepositoryMock.findByDone(eq(false), any(Pageable.class))).thenReturn(notDoneTodoPage);
+        when(todoRepositoryMock.findByIsDone(eq(false), any(Pageable.class))).thenReturn(notDoneTodoPage);
 
         Page<Todo> notDoneTodos = todoService.getNotDoneTodos(1, 10); // Assuming page 1 and 10 items per page
 
